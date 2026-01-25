@@ -9,23 +9,30 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import environ
+import os
 from pathlib import Path
+
+env = environ.Env(
+    DEBUG=(bool, False)
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+#Take ENVs from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-tfv-6u_w=)f6te$7u!uk2)lc^pumo51%!3n!xb7w9v$f5b1m32'
-
+SECRET_KEY = env('SECRET_KEY')
+# 'django-insecure-tfv-6u_w=)f6te$7u!uk2)lc^pumo51%!3n!xb7w9v$f5b1m32' cred stored in env above
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*'] #I'll tighten this later
 
 
 # Application definition
@@ -79,12 +86,13 @@ WSGI_APPLICATION = 'zeecommerce.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db('DATABSE_URL', default='postgres://localhost')
 }
 
+#this is for redis/celery later
+CACHES = {
+    'default': env.cache('REDIS_URL', default='redis://localhost:6379/0')
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

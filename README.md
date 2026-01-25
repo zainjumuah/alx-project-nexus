@@ -2,6 +2,13 @@
 
 A Django-based backend for an e-commerce platform, featuring products, user auth, orders, products, and more to come after I finish tackling these.
 
+##Features
+- JWT Auth
+- Product catalog
+- Cart + Order creation
+- Swagger API docs
+- PostgreSQL + Redis + Celery
+
 ##Setup Instructions
 1. Clone the repo: `git-clone alx-project-nexus`
 2. Create and activate venv: `python -m venv venv` and activate it with `source your-venv-absolute-path/bin/activate`
@@ -12,3 +19,4 @@ A Django-based backend for an e-commerce platform, featuring products, user auth
 7. 
 ## 
 # alx-project-nexus
+
