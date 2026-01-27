@@ -11,3 +11,15 @@ class Product(models.Model):
     #will create image and categpory fields
     def __str__(self):
         return self.title
+    
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.textField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+
+    def __str__(self):
+        return self.name
