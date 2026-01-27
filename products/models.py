@@ -14,7 +14,7 @@ class Product(models.Model):
     
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    description = models.textField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
