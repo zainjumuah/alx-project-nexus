@@ -8,6 +8,6 @@ class Product(models.Model):
     stock = models.PositiveIntegerField(default=0)
     location = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now=True)
-
+    #will create image and categpory fields
     def __str__(self):
         return self.title
