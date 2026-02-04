@@ -1,0 +1,113 @@
+from pathlib import Path
+import os
+import environ
+from django.core.exceptions import ImproperlyConfigured
+
+#parent.parent.parent because I'm in a subfolder in zeecommerce now
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+env = environ.Env(
+    DEBUG=(bool, False),
+    ALLOWED_HOSTS=(list, []),
+)
+
+#This loads the .env ifit is present in this dev env
+ENV_FILE = BASE_DIR / ".env"
+if ENV_FILE.exists():
+    environ.Env.read_env(str(ENV_FILE))
+
+def require(var_name: str) -> str:
+    """Scream as loud as you can if a required env var is missing o"""
+    try:
+        return env(var_name)
+    except Exception as exc:
+        raise ImproperlyConfigured(
+            f"Missing required env: {var_name}"
+        ) from exc
+    
+#Here's where I keep my secrets
+SECRET_KEY = require("SECRET_KEY")
+DEBUG = env("DEBUG")
+
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+
+#App definitions
+INSTALLED_APPS = [
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+
+    #third party apps
+    "rest_framework",
+    "drf_yasg",
+
+    #loacl apps
+    "products",
+    "users",
+    "orders",
+]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "zeecommerce.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = "zeecommerce.wsgi.application"
+
+
+# Database (SINGLE source of truth)
+DATABASES = {"default": env.db("DATABASE_URL")}
+
+
+#Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
+
+#i18n 
+LANGUAGE_CODE = "en-gb"
+TIME_ZONE = "Africa/Lagos"
+USE_I18N = True
+USE_TZ = True
+USE_L10N = True
+
+
+# Static
+STATIC_URL = "static/"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# drf defaults - simple for now
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": [],
+}
