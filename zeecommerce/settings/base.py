@@ -98,7 +98,6 @@ LANGUAGE_CODE = "en-gb"
 TIME_ZONE = "Africa/Lagos"
 USE_I18N = True
 USE_TZ = True
-USE_L10N = True
 
 
 # Static

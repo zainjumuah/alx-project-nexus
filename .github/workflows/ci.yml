@@ -12,15 +12,15 @@ jobs:
     env:
       #from Django settings y;all
       TIME_ZONE: "Africa/Lagos"
-      DJANGO_SETTINGS_MODULE: zeecommerce.settings
+      DJANGO_SETTINGS_MODULE: zeecommerce.settings.dev
       DEBUG: "False"
 
       #CI-safe secrets/config (Remember to never use prod secrets here, fellow devs!)
       SECRET_KEY: "ci-insecure-secret-key"
-      DATABASE_URL: "postgres:///"
+      DATABASE_URL: "sqlite:///db.sqlite3"
 
       #Dummy Redis URL
-      REDIS_URL: "redis:127.0.0.1:6379/0"
+      REDIS_URL: "redis://127.0.0.1:6379/0"
 
     steps:
       - name: Checkout
@@ -42,4 +42,4 @@ jobs:
 
       - name: Run tests
         run: |
-           pythonmanage.py test
+           python manage.py test

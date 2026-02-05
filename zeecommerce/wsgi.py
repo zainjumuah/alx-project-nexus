@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+#consder adding a future DEBUG switch to chage the env to prod tomorrow, future Zain
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zeecommerce.settings.dev')
 
 application = get_wsgi_application()
