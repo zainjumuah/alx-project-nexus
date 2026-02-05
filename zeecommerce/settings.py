@@ -2,6 +2,7 @@
 import environ
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 env = environ.Env(
     DEBUG=(bool, False)
@@ -11,18 +12,31 @@ env = environ.Env(
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #Take ENVs from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+#Below (two lines) is the previous implementation, I'm making an update. This will suck in prod, since .env almost never exists
+#Check line 15 of settings/base.py for sth similiar, future Zain
+# environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+ENV_FILE = BASE_DIR / ".env"
+if ENV_FILE.exists():
+    environ.Env.read_env(str(ENV_FILE))
+
+#require 
+def require(var_name: str) -> str:
+    """Scream as loud as you can if a required env var is missing o"""
+    try:
+        return env(var_name)
+    except Exception as exc:
+        raise ImproperlyConfigured(
+            f"Missing required env: {var_name}"
+        ) from exc
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
-# 'django-insecure-tfv-6u_w=)f6te$7u!uk2)lc^pumo51%!3n!xb7w9v$f5b1m32' cred stored in env above
+SECRET_KEY = require('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['*'] #I'll tighten this later
 
 
 # Application definition
