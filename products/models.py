@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Q, CheckConstraint
+from django.db.models import Q
 
 
 class TimeStampedModel(models.Model):
@@ -16,8 +16,8 @@ class Category(TimeStampedModel):
     slug = models.SlugField(max_length=140, unique=True)
 
     class Meta:
-        #verbose_name_plural = "Categories"
-        indexes = [models.Index(fields=["slug"]),]
+        verbose_name_plural = "Categories"
+        #indexes = [models.Index(fields=["slug"]),] I'm editing you out because I have set slug unique=True
 
     #def __str__(self):
     def __str__(self) -> str:
@@ -54,7 +54,7 @@ class Product(TimeStampedModel):
                 #), #uneeded, stock is defined with a PositiveIntegerField field type
         ]
         indexes = [
-            models.Index(fields=["category"]),
+            #models.Index(fields=["category"]), commenting this line out because Product.category already has an implicit idex as Fk
             models.Index(fields=["price"]),
             models.Index(fields=["category", "price"]),
         ]

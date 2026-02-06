@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 import environ
 from django.core.exceptions import ImproperlyConfigured
 
