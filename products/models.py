@@ -24,7 +24,7 @@ class Category(TimeStampedModel):
         return self.name
 
 
-class Product(models.Model):
+class Product(TimeStampedModel):
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
@@ -36,9 +36,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     #location = models.CharField(max_length=255, blank=True, null=True)
-    location = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, blank=True)
     #created_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    #created_at = models.DateTimeField(auto_now_add=True)
     #will create image and categpory fields
     
     #newly added class
