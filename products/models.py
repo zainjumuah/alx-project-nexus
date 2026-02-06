@@ -12,14 +12,12 @@ class TimeStampedModel(models.Model):
 class Category(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
-    #created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(max_length=140, unique=True)
 
     class Meta:
         verbose_name_plural = "Categories"
         #indexes = [models.Index(fields=["slug"]),] I'm editing you out because I have set slug unique=True
 
-    #def __str__(self):
     def __str__(self) -> str:
         return self.name
 
@@ -35,13 +33,8 @@ class Product(TimeStampedModel):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=12, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
-    #location = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True)
-    #created_at = models.DateTimeField(auto_now=True)
-    #created_at = models.DateTimeField(auto_now_add=True)
-    #will create image and categpory fields
     
-    #newly added class
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -54,11 +47,9 @@ class Product(TimeStampedModel):
                 ), #uneeded, stock is defined with a PositiveIntegerField field type but I need it for db_level constraint tests
         ]
         indexes = [
-            #models.Index(fields=["category"]), commenting this line out because Product.category already has an implicit idex as Fk
             models.Index(fields=["price"]),
             models.Index(fields=["category", "price"]),
         ]
     
-    #def __str__(self):
     def __str__(self) -> str:
         return self.title
