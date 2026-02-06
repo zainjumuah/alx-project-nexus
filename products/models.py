@@ -48,10 +48,10 @@ class Product(TimeStampedModel):
                 condition=Q(price__gte=0), 
                 name="product_price_gte_0",
                 ),
-            #models.CheckConstraint(
-                #condition=Q(stock__gte=0), 
-                #name="product_stock_gte_0",
-                #), #uneeded, stock is defined with a PositiveIntegerField field type
+            models.CheckConstraint(
+                condition=Q(stock__gte=0), 
+                name="product_stock_gte_0",
+                ), #uneeded, stock is defined with a PositiveIntegerField field type but I need it for db_level constraint tests
         ]
         indexes = [
             #models.Index(fields=["category"]), commenting this line out because Product.category already has an implicit idex as Fk
