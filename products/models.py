@@ -12,7 +12,7 @@ class TimeStampedModel(models.Model):
 class Category(TimeStampedModel):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True, null=True)
-    """created_at = models.DateTimeField(auto_now_add=True)"""
+    #created_at = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(max_length=140, unique=True)
 
     class Meta:
