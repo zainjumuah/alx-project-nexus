@@ -44,7 +44,7 @@ class Product(TimeStampedModel):
             models.CheckConstraint(
                 condition=Q(stock__gte=0), 
                 name="product_stock_gte_0",
-                ), #uneeded, stock is defined with a PositiveIntegerField field type but I need it for db_level constraint tests
+                ),
         ]
         indexes = [
             models.Index(fields=["price"]),
