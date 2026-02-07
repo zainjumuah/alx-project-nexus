@@ -17,3 +17,6 @@ db.sqlite3
 htmlcov/
 staticfiles/
 media/
+
+test_models.py
+products/tests/all_tests.py

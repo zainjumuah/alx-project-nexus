@@ -8,15 +8,16 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
+from .filters import ProductFilter
 
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related("category").all()
+    queryset = Product.objects.select_related("category").order_by("id")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["category"]
+    filterset_class = ProductFilter
     ordering_fields = ["price"]
 
     def get_queryset(self):
