@@ -72,6 +72,8 @@ class CategoryAPITests(TestCase):
         res = self.client.get(self._categories_list_url())
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertTrue(res["Content-Type"].startswith("application/json"))
+        for key in ("count", "next", "previous", "results"):
+            self.assertIn(key, res.data)
 
     def test_anonymous_detail_category_200(self):
         cat = Category.objects.create(**self._unique_payload())

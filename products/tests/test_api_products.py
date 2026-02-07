@@ -103,6 +103,8 @@ class ProductsAPIPermissionTests(TestCase):
         resp = self.client.get(self._products_list_url())
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp["Content-Type"].startswith("application/json"))
+        for key in ("count", "next", "previous", "results"):
+            self.assertIn(key, resp.data)
 
     def test_products_create_rejects_anonymous(self):
         resp = self.client.post(self._products_list_url(), self._valid_product_payload(), format="json")

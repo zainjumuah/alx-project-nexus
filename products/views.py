@@ -21,7 +21,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Query optimized + strict validation for category query param type.
+        Query optimized + strict validation for category query parameter type.
 
         Policy:
         - category missing => normal list
