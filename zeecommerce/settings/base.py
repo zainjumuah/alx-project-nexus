@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     "orders",
 
     #auth
-    'drf_yasg',
     'rest_framework_simplejwt',
 ]
 
@@ -111,7 +110,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # drf defaults - simple for now
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.ISAuthenticatedOrReadOnly",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
