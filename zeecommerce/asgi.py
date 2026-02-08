@@ -11,6 +11,7 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'zeecommerce.settings.dev')
+# I keep this aligned with wsgi so deploy/runtime entrypoints behave the same way.
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zeecommerce.settings.prod")
 
 application = get_asgi_application()
