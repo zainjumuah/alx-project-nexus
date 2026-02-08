@@ -75,3 +75,18 @@ class ProductQueryPerfTests(TestCase):
             resp = self.client.get(url, {"category": self.cat.id, "ordering": "price"})
         self.assertEqual(resp.status_code, 200)
 
+    def test_category_param_non_int_returns_400(self):
+        url = self._list_url()
+        self._seed_products(5)
+
+        with self.assertNumQueries(0):  # should fail before DB work
+            resp = self.client.get(url, {"category": "abc"})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_category_param_negative_returns_400(self):
+        url = self._list_url()
+        self._seed_products(5)
+
+        with self.assertNumQueries(0):
+            resp = self.client.get(url, {"category": -1})
+        self.assertEqual(resp.status_code, 400)
