@@ -18,6 +18,8 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
-      # Optional but recommended:
+      - key: DJANGO_SETTINGS_MODULE
+        value: "zeecommerce.settings.prod"
+      # Optional rn:
       - key: WEB_CONCURRENCY
         value: "4"
