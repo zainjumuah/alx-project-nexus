@@ -7,7 +7,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .filters import ProductFilter
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 
@@ -106,11 +105,15 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_class = ProductFilter
-    ordering_fields = ["price"]
+    # I switched from a custom ProductFilter to filterset_fields because right now
+    # I only need simple category filtering. This is less code to maintain, easier
+    # for the future me to read quickly, and get_queryset still handles bad input clearly.
+    filterset_fields = ["category"]
+    ordering_fields = ["price", "created_at"]
+    ordering = ["price"]
 
     def get_queryset(self):
-        qs = Product.objects.select_related("category").order_by("id")
+        qs = Product.objects.select_related("category").all()
         raw_category = self.request.query_params.get("category")
         if raw_category is not None:
             try:
