@@ -1,0 +1,23 @@
+databases:
+  - name: zeecommerce-db
+    plan: free
+
+services:
+  - type: web
+    name: zeecommerce-api
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn zeecommerce.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zeecommerce-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      # Optional but recommended:
+      - key: WEB_CONCURRENCY
+        value: "4"
