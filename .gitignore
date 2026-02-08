@@ -18,5 +18,6 @@ htmlcov/
 staticfiles/
 media/
 
-test_models.py
-products/tests/all_tests.py
+# log files
+*.log
+/logs/
