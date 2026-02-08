@@ -1,5 +1,4 @@
 from django.utils.decorators import method_decorator
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, viewsets
@@ -22,9 +21,9 @@ PRODUCT_LIST_PARAMETERS = [
     openapi.Parameter(
         "ordering",
         openapi.IN_QUERY,
-        description="Sort products by price using 'price' or '-price'.",
+        description="Sort by price or created_at using 'price', '-price', 'created_at', or '-created_at'.",
         type=openapi.TYPE_STRING,
-        enum=["price", "-price"],
+        enum=["price", "-price", "created_at", "-created_at"],
         required=False,
     ),
     openapi.Parameter(
@@ -52,6 +51,13 @@ CATEGORY_LIST_PARAMETERS = [
         type=openapi.TYPE_INTEGER,
         required=False,
     ),
+    openapi.Parameter(
+        "page_size",
+        openapi.IN_QUERY,
+        description="Results per page, if page-size query is enabled.",
+        type=openapi.TYPE_INTEGER,
+        required=False,
+    ),
 ]
 
 
@@ -61,7 +67,8 @@ CATEGORY_LIST_PARAMETERS = [
         tags=["Products"],
         manual_parameters=PRODUCT_LIST_PARAMETERS,
         operation_description=(
-            "List products (public). Use query parameters for filtering and ordering."
+            "List products (public). Use query parameters for filtering and ordering.\n"
+            "Example: GET /api/products/?category=1&ordering=price&page=1"
         ),
     ),
 )
@@ -104,11 +111,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    # I switched from a custom ProductFilter to filterset_fields because right now
-    # I only need simple category filtering. This is less code to maintain, easier
-    # for the future me to read quickly, and get_queryset still handles bad input clearly.
-    filterset_fields = ["category"]
+    # I removed DjangoFilterBackend because I'm already validating and filtering
+    # by category in get_queryset, and I didn't want two systems doing the same job.
+    filter_backends = [OrderingFilter]
     ordering_fields = ["price", "created_at"]
     ordering = ["price"]
 
