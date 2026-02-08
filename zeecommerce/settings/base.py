@@ -122,6 +122,7 @@ REST_FRAMEWORK = {
 
 SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
+    # I keep auth persisted in Swagger so I don't have to paste tokens repeatedly while testing.
     "PERSIST_AUTH": True,
     "DISPLAY_OPERATION_ID": False,
     "SECURITY_DEFINITIONS": {
@@ -132,6 +133,7 @@ SWAGGER_SETTINGS = {
             "description": "Paste: Bearer <access_token>",
         }
     },
+    # I set this so protected endpoints visibly show auth requirement in Swagger UI.
     "SECURITY_REQUIREMENTS": [{"Bearer (JWT)": []}],
 }
 

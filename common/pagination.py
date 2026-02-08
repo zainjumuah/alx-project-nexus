@@ -6,5 +6,5 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     # I added this so `?page_size=...` actually works from Swagger/manual calls.
     page_size_query_param = "page_size"
-    # I capped it so nobody can request something huge and slow down responses.
+    # I capped it so clients can tune page size without requesting huge payloads.
     max_page_size = 100

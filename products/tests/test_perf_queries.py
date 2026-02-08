@@ -26,7 +26,7 @@ class ProductQueryPerfTests(TestCase):
         cls.cat = Category.objects.create(name="Phones", slug="phones")
 
     def setUp(self):
-        # Fresh client per test to avoid state leakage (auth headers, cookies, etc.)
+        # Fresh client per test to avoid state leakage (auth headers, cookies, etc)
         self.client = APIClient()
 
     def _seed_products(self, n: int, offset: int = 0):
@@ -55,8 +55,8 @@ class ProductQueryPerfTests(TestCase):
             resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
-        # Hard proof the serializer is dereferencing category fields.
-        # If this fails, my test is not protecting against N+1 at all.
+        # proof the serializer is dereferencing category fields.
+        # If this fails, my test is not protecting against N+1 at all, sad.
         first = resp.data["results"][0]
         self.assertIn("category_name", first)
         self.assertIn("category_slug", first)
@@ -71,6 +71,7 @@ class ProductQueryPerfTests(TestCase):
         url = self._list_url()
         self._seed_products(50)
 
+        # I kept this strict on purpose: this should stay count query + page fetch query.
         with self.assertNumQueries(2):
             resp = self.client.get(url, {"category": self.cat.id, "ordering": "price"})
         self.assertEqual(resp.status_code, 200)
@@ -79,7 +80,8 @@ class ProductQueryPerfTests(TestCase):
         url = self._list_url()
         self._seed_products(5)
 
-        with self.assertNumQueries(0):  # should fail before DB work
+        # I expect this to fail at validation stage before touching the DB.
+        with self.assertNumQueries(0):
             resp = self.client.get(url, {"category": "abc"})
         self.assertEqual(resp.status_code, 400)
 
@@ -87,6 +89,7 @@ class ProductQueryPerfTests(TestCase):
         url = self._list_url()
         self._seed_products(5)
 
+        # Same idea as above: invalid params should short-circuit before query execution. Pew
         with self.assertNumQueries(0):
             resp = self.client.get(url, {"category": -1})
         self.assertEqual(resp.status_code, 400)

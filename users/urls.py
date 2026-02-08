@@ -8,6 +8,7 @@ from .docs_auth_views import (
 from .views import RegisterView
 
 urlpatterns = [
+    # I keep all auth endpoints here so root urls.py can just include api/auth/ once.
     path("register/", RegisterView.as_view(), name="auth-register"),
     path("token/", TokenObtainPairViewDocs.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshViewDocs.as_view(), name="token_refresh"),

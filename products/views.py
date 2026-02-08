@@ -114,6 +114,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     # I removed DjangoFilterBackend because I'm already validating and filtering
     # by category in get_queryset, and I didn't want two systems doing the same job.
     filter_backends = [OrderingFilter]
+    # I kept ordering explicit so Swagger docs and backend behavior stay aligned.
     ordering_fields = ["price", "created_at"]
     ordering = ["price"]
 
@@ -127,6 +128,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"category": "Must be an integer category id."})
             if cat_id <= 0:
                 raise ValidationError({"category": "Must be a positive integer category id."})
+            # I filter directly here so bad values fail fast and valid values are always applied.
             qs = qs.filter(category_id=cat_id)
 
         return qs

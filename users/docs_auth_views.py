@@ -6,7 +6,8 @@ from rest_framework_simplejwt.views import (
 )
 
 
-# I moved these wrappers out of urls.py so routes stay cleaner.
+# I moved these wrappers out of urls.py so routes stay cleaner,
+# and so auth docs tagging lives with the users module.
 class TokenObtainPairViewDocs(TokenObtainPairView):
     @swagger_auto_schema(
         tags=["Auth"],
