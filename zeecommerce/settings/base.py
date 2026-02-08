@@ -120,14 +120,17 @@ REST_FRAMEWORK = {
 
 SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
+    "PERSIST_AUTH": True,
+    "DISPLAY_OPERATION_ID": False,
     "SECURITY_DEFINITIONS": {
-        "Bearer": {
+        "Bearer (JWT)": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-            "description": 'JWT Authorization header. Example: "Bearer <your_access_token>"',
+            "description": "Paste: Bearer <access_token>",
         }
     },
+    "SECURITY_REQUIREMENTS": [{"Bearer (JWT)": []}],
 }
 
 AUTH_USER_MODEL = 'users.CustomUser'
