@@ -1,3 +1,4 @@
+from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -6,13 +7,101 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
+from .filters import ProductFilter
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
-from .filters import ProductFilter
 
 
+PRODUCT_LIST_PARAMETERS = [
+    openapi.Parameter(
+        "category",
+        openapi.IN_QUERY,
+        description="Filter products by category id.",
+        type=openapi.TYPE_INTEGER,
+        required=False,
+    ),
+    openapi.Parameter(
+        "ordering",
+        openapi.IN_QUERY,
+        description="Sort products by price using 'price' or '-price'.",
+        type=openapi.TYPE_STRING,
+        enum=["price", "-price"],
+        required=False,
+    ),
+    openapi.Parameter(
+        "page",
+        openapi.IN_QUERY,
+        description="Page number.",
+        type=openapi.TYPE_INTEGER,
+        required=False,
+    ),
+    openapi.Parameter(
+        "page_size",
+        openapi.IN_QUERY,
+        description="Results per page, if page-size query is enabled.",
+        type=openapi.TYPE_INTEGER,
+        required=False,
+    ),
+]
+
+
+CATEGORY_LIST_PARAMETERS = [
+    openapi.Parameter(
+        "page",
+        openapi.IN_QUERY,
+        description="Page number.",
+        type=openapi.TYPE_INTEGER,
+        required=False,
+    ),
+]
+
+
+@method_decorator(
+    name="list",
+    decorator=swagger_auto_schema(
+        tags=["Products"],
+        manual_parameters=PRODUCT_LIST_PARAMETERS,
+        operation_description=(
+            "List products (public). Use query parameters for filtering and ordering."
+        ),
+    ),
+)
+@method_decorator(
+    name="retrieve",
+    decorator=swagger_auto_schema(
+        tags=["Products"],
+        operation_description="Retrieve a single product (public).",
+    ),
+)
+@method_decorator(
+    name="create",
+    decorator=swagger_auto_schema(
+        tags=["Products"],
+        operation_description="Create a product (JWT required).",
+    ),
+)
+@method_decorator(
+    name="update",
+    decorator=swagger_auto_schema(
+        tags=["Products"],
+        operation_description="Update a product (JWT required).",
+    ),
+)
+@method_decorator(
+    name="partial_update",
+    decorator=swagger_auto_schema(
+        tags=["Products"],
+        operation_description="Partially update a product (JWT required).",
+    ),
+)
+@method_decorator(
+    name="destroy",
+    decorator=swagger_auto_schema(
+        tags=["Products"],
+        operation_description="Delete a product (JWT required).",
+    ),
+)
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.select_related("category").order_by("id")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -21,8 +110,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ["price"]
 
     def get_queryset(self):
-        qs = super().get_queryset()
-
+        qs = Product.objects.select_related("category").order_by("id")
         raw_category = self.request.query_params.get("category")
         if raw_category is not None:
             try:
@@ -31,36 +119,54 @@ class ProductViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"category": "Must be an integer category id."})
             if cat_id <= 0:
                 raise ValidationError({"category": "Must be a positive integer category id."})
+            qs = qs.filter(category_id=cat_id)
 
         return qs
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "category",
-                openapi.IN_QUERY,
-                description="Filter by category id (integer). Non-integer values return 400.",
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "ordering",
-                openapi.IN_QUERY,
-                description="Order by price: use 'price' or '-price'.",
-                type=openapi.TYPE_STRING,
-                enum=["price", "-price"],
-            ),
-            openapi.Parameter(
-                "page",
-                openapi.IN_QUERY,
-                description="Page number (PageNumberPagination).",
-                type=openapi.TYPE_INTEGER,
-            ),
-        ]
-    )
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
-
+@method_decorator(
+    name="list",
+    decorator=swagger_auto_schema(
+        tags=["Categories"],
+        manual_parameters=CATEGORY_LIST_PARAMETERS,
+        operation_description="List categories (public).",
+    ),
+)
+@method_decorator(
+    name="retrieve",
+    decorator=swagger_auto_schema(
+        tags=["Categories"],
+        operation_description="Retrieve a single category (public).",
+    ),
+)
+@method_decorator(
+    name="create",
+    decorator=swagger_auto_schema(
+        tags=["Categories"],
+        operation_description="Create a category (JWT required).",
+    ),
+)
+@method_decorator(
+    name="update",
+    decorator=swagger_auto_schema(
+        tags=["Categories"],
+        operation_description="Update a category (JWT required).",
+    ),
+)
+@method_decorator(
+    name="partial_update",
+    decorator=swagger_auto_schema(
+        tags=["Categories"],
+        operation_description="Partially update a category (JWT required).",
+    ),
+)
+@method_decorator(
+    name="destroy",
+    decorator=swagger_auto_schema(
+        tags=["Categories"],
+        operation_description="Delete a category (JWT required).",
+    ),
+)
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by("name")
     serializer_class = CategorySerializer
