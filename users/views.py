@@ -14,5 +14,6 @@ from .serializers import RegisterSerializer
     ),
 )
 class RegisterView(generics.CreateAPIView):
+    # I'll just leave this public on purpose so first-time users can create accounts.
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]

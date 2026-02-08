@@ -10,6 +10,7 @@ from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 
 
+# I'll keep these query params centralized so list docs don't drift from the actual API.
 PRODUCT_LIST_PARAMETERS = [
     openapi.Parameter(
         "category",
@@ -43,6 +44,7 @@ PRODUCT_LIST_PARAMETERS = [
 ]
 
 
+# I'll keep category list params separate so I can grow category discovery later without touching products.
 CATEGORY_LIST_PARAMETERS = [
     openapi.Parameter(
         "page",

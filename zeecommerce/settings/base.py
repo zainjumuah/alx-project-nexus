@@ -2,7 +2,7 @@ from pathlib import Path
 import environ
 from django.core.exceptions import ImproperlyConfigured
 
-#parent.parent.parent because I'm in a subfolder in zeecommerce now
+# I'm stepping three levels up because this file sits inside `zeecommerce/settings/` now.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env(
@@ -10,27 +10,27 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, []),
 )
 
-#This loads the .env ifit is present in this dev env
+# I loaded `.env` in local/dev so I can run without exporting vars every time.
 ENV_FILE = BASE_DIR / ".env"
 if ENV_FILE.exists():
     environ.Env.read_env(str(ENV_FILE))
 
 def require(var_name: str) -> str:
-    """Scream as loud as you can if a required env var is missing o"""
+    """I fail fast when a required environment variable is missing."""
     try:
         return env(var_name)
     except Exception as exc:
         raise ImproperlyConfigured(
             f"Missing required env: {var_name}"
         ) from exc
-    
-#Here's where I keep my secrets
+
+# I'll keep sensitive values in ens only.
 SECRET_KEY = require("SECRET_KEY")
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
-#App definitions
+# App defs
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -41,22 +41,22 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_filters",
 
-    #third party apps
+    # Third-party apps
     "rest_framework",
     "drf_yasg",
 
-    #loacl apps
+    # Local apps
     "products",
     "users",
     "orders",
 
-    #auth
-    'rest_framework_simplejwt',
+    # Auth
+    "rest_framework_simplejwt",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    # I keep this right after SecurityMiddleware so static files are served efficiently in prod.
+    # I kept this right after SecurityMiddleware so static files are served efficiently in prod.
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -86,11 +86,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "zeecommerce.wsgi.application"
 
 
-# Database (SINGLE source of truth)
+# Database
 DATABASES = {"default": env.db("DATABASE_URL")}
 
 
-#Password validation
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -99,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-#i18n 
+# i18n
 LANGUAGE_CODE = "en-gb"
 TIME_ZONE = "Africa/Lagos"
 USE_I18N = True
@@ -107,12 +107,12 @@ USE_TZ = True
 
 
 # Static
-# I use a full slash path so static URLs are unambiguous across environments.
+# I used a full slash path so static URLs are unambiguous (I just learned this, haha) across environments.
 STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-# drf defaults - simple for now
+# DRF defaults
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
@@ -125,7 +125,7 @@ REST_FRAMEWORK = {
 
 SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
-    # I keep auth persisted in Swagger so I don't have to paste tokens repeatedly while testing.
+    # I kept auth persisted in Swagger so I don't have to paste tokens repeatedly while testing.
     "PERSIST_AUTH": True,
     "DISPLAY_OPERATION_ID": False,
     "SECURITY_DEFINITIONS": {
