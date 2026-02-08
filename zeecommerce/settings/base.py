@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import environ
 from django.core.exceptions import ImproperlyConfigured
@@ -10,9 +11,10 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, []),
 )
 
-# I loaded `.env` in local/dev so I can run without exporting vars every time.
+# I only load `.env` in dev settings so production uses real platform env vars only.
 ENV_FILE = BASE_DIR / ".env"
-if ENV_FILE.exists():
+settings_module = os.environ.get("DJANGO_SETTINGS_MODULE", "")
+if settings_module.endswith(".dev") and ENV_FILE.exists():
     environ.Env.read_env(str(ENV_FILE))
 
 def require(var_name: str) -> str:
@@ -48,7 +50,6 @@ INSTALLED_APPS = [
     # Local apps
     "products",
     "users",
-    "orders",
 
     # Auth
     "rest_framework_simplejwt",

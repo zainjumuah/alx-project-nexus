@@ -18,11 +18,13 @@ if not ALLOWED_HOSTS or set(ALLOWED_HOSTS).issubset({"127.0.0.1", "localhost"}):
 # I set this so collectstatic has one clear output directory in prod.
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# I use WhiteNoise storage in prod so static assets are compressed and cache-friendly.
+# I'm using WhiteNoise storage in prod so static assets are compressed and cache-friendly.
 STORAGES = {
-    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+  "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+  "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+
+
 # I set this to avoid hard-fail on missing sourcemap refs from third-party static assets.
 WHITENOISE_MANIFEST_STRICT = False
 
