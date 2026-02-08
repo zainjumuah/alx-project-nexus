@@ -21,14 +21,6 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ["price"]
 
     def get_queryset(self):
-        """
-        Query optimized + strict validation for category query parameter type.
-
-        Policy:
-        - category missing => normal list
-        - category non-integer / <=0 => 400 (explicit and consistent)
-        - category integer but not found => empty results (normal filter semantics)
-        """
         qs = super().get_queryset()
 
         raw_category = self.request.query_params.get("category")
