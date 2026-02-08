@@ -1,39 +1,55 @@
-# E-Commerce Backend (Django + DRF)
+# ZeeCommerce API
 
-Backend API for an e-commerce product catalog built with Django and Django REST Framework.
+Production-ready e-commerce backend API built with Django + DRF.
 
-This project is designed as a **real-world backend system**, not a toy app.
-It emphasizes clean architecture, PostgreSQL usage, disciplined version control, and API readiness for frontend consumption.
+This project provides product and category management with JWT authentication, discovery filters, pagination, Swagger docs, and deployment-ready settings for Render.
+
+## Live URLs
+
+- Base URL: `https://zeecommerce-api.onrender.com`
+- Swagger UI: `https://zeecommerce-api.onrender.com/swagger/`
+- ReDoc: `https://zeecommerce-api.onrender.com/redoc/`
+
+## Core Features
+
+- Products CRUD: `/api/products/`, `/api/products/<id>/`
+- Categories CRUD: `/api/categories/`, `/api/categories/<id>/`
+- JWT auth flow:
+  - Register: `/api/auth/register/`
+  - Obtain token: `/api/auth/token/`
+  - Refresh token: `/api/auth/token/refresh/`
+  - Verify token: `/api/auth/token/verify/`
+- Product discovery:
+  - Filter by category: `?category=<id>`
+  - Ordering: `?ordering=price`, `?ordering=-price`, `?ordering=created_at`, `?ordering=-created_at`
+  - Pagination: `?page=<n>&page_size=<n>`
+- API docs grouped by tags: Products, Categories, Auth
+- Performance guardrails with query-count tests
 
 ## Tech Stack
 
 - Python 3.12+
-- Django + Django REST Framework
+- Django 5.x
+- Django REST Framework
 - PostgreSQL
-- Redis (later: caching, Celery)
-- JWT Authentication (planned)
-- Swagger / OpenAPI (planned)
+- `djangorestframework-simplejwt`
+- `drf-yasg` (Swagger/OpenAPI)
+- WhiteNoise (static files in production)
 
-## Requirements
+## Local Setup
 
-- Python 3.12 or higher
-- PostgreSQL installed and running
-- Redis (optional for later stages)
-
-## Local Development Setup
-
-### 1) Clone the repository
+### 1) Clone and enter project
 
 ```bash
-git clone <REPO_URL>
+git clone <YOUR_REPO_URL>
 cd alx-project-nexus
 ```
 
-### 2) Create and activate a virtual environment
+### 2) Create and activate virtual environment
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 ### 3) Install dependencies
@@ -42,18 +58,16 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4) Environment configuration
-
-Create your local environment file:
+### 4) Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and set values exactly as required:
+Expected keys (from `.env.example`):
 
-```bash
-SECRET_KEY=your-secret-key
+```env
+SECRET_KEY=put-yours-here
 DEBUG=True
 DATABASE_URL=postgres://user:password@localhost:5432/dbname
 REDIS_URL=redis://localhost:6379/0
@@ -61,54 +75,131 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 DJANGO_SETTINGS_MODULE=zeecommerce.settings.dev
 ```
 
-Notes:
-
-- `.env` must never be committed.
-- `DATABASE_URL` must point to an existing PostgreSQL database.
-- For local development, `DJANGO_SETTINGS_MODULE` should be `zeecommerce.settings.dev`.
-
-### 5) PostgreSQL setup (example)
-
-```bash
-sudo -u postgres psql
-```
-
-```sql
-CREATE DATABASE dbname;
-CREATE USER user WITH PASSWORD 'password';
-GRANT ALL PRIVILEGES ON DATABASE dbname TO user;
-```
-
-Ensure the credentials match your `DATABASE_URL`.
-
-### 6) Database migrations and server
+### 5) Migrate and run
 
 ```bash
 python manage.py migrate
 python manage.py runserver
 ```
 
-Server will be available at:
-`http://127.0.0.1:8000/`
+Local API: `http://127.0.0.1:8000`
 
-## Useful Commands
+## Auth Flow (curl)
 
 ```bash
-python manage.py check
-python manage.py migrate
-python manage.py runserver
+export BASE_URL="http://127.0.0.1:8000"
+# export BASE_URL="https://zeecommerce-api.onrender.com"
+```
+
+### Register
+
+```bash
+curl -i -X POST "$BASE_URL/api/auth/register/" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo_user","email":"demo_user@example.com","password":"StrongPass123!"}'
+```
+
+### Obtain JWT
+
+```bash
+curl -s -X POST "$BASE_URL/api/auth/token/" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo_user","password":"StrongPass123!"}'
+```
+
+Save tokens from response:
+
+```bash
+export TOKEN="<access_token>"
+export REFRESH="<refresh_token>"
+```
+
+### Refresh
+
+```bash
+curl -i -X POST "$BASE_URL/api/auth/token/refresh/" \
+  -H "Content-Type: application/json" \
+  -d '{"refresh":"'$REFRESH'"}'
+```
+
+### Verify
+
+```bash
+curl -i -X POST "$BASE_URL/api/auth/token/verify/" \
+  -H "Content-Type: application/json" \
+  -d '{"token":"'$TOKEN'"}'
+```
+
+## API Usage Examples
+
+### List products (public)
+
+```bash
+curl -i "$BASE_URL/api/products/"
+```
+
+### Create category (auth required)
+
+```bash
+curl -i -X POST "$BASE_URL/api/categories/" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"name":"Phones","slug":"phones"}'
+```
+
+### Create product (auth required)
+
+```bash
+curl -i -X POST "$BASE_URL/api/products/" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"title":"Deployed Test","description":"Demo item","price":"10.00","stock":1,"category":1}'
+```
+
+### Discovery query
+
+```bash
+curl -i "$BASE_URL/api/products/?category=1&ordering=price&page=1&page_size=10"
+```
+
+## Tests
+
+Run the full test suite:
+
+```bash
 python manage.py test
 ```
 
-## Project Status
+## Deployment (Render)
 
-Known limitation (acknowledged):
+This repo is configured for Render Blueprint deployment (`render.yaml` + `build.sh`).
 
-- `python manage.py check` may fail if the admin is configured to filter on a `Product.category` field before the `Product → Category` relationship is implemented (or updated).
-- This is a known, intentional state and will be resolved in the next development cycle.
+Build script runs:
 
-## Version Control Discipline
+- `pip install -r requirements.txt`
+- `python manage.py collectstatic --noinput --settings=zeecommerce.settings.prod`
+- `python manage.py migrate --settings=zeecommerce.settings.prod`
 
-- `.env` and local DB files are ignored.
-- `.env.example` is the single source of truth for environment configuration.
-- Commits should be descriptive and intentional.
+Production runtime uses:
+
+- `DJANGO_SETTINGS_MODULE=zeecommerce.settings.prod`
+- `WhiteNoise` static handling
+- hardened host/proxy settings
+
+## Common Gotchas
+
+- DRF routers enforce trailing slashes:
+  - Use `/api/products/` not `/api/products`
+- Token obtain expects `username` + `password` keys
+- Creating a product requires a valid existing `category` id
+- If auth works in Swagger but fails in curl, verify header format:
+  - `Authorization: Bearer <access_token>`
+
+## Project Structure (high level)
+
+```text
+zeecommerce/         # project config + settings
+products/            # product/category models, serializers, viewsets, tests
+users/               # registration + JWT docs wrappers + auth routes
+common/              # shared utilities (pagination)
+```
