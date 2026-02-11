@@ -1,28 +1,31 @@
 from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, viewsets
-from rest_framework.exceptions import ValidationError
-from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
+from .filters import ProductFilter, StableOrderingFilter
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer
 
 
-# I'll keep these query params centralized so list docs don't drift from the actual API.
+# I keep these centralized so product list docs stay aligned with real query behavior.
 PRODUCT_LIST_PARAMETERS = [
     openapi.Parameter(
         "category",
         openapi.IN_QUERY,
-        description="Filter products by category id.",
+        description="Filter products by category id. Invalid values return 400.",
         type=openapi.TYPE_INTEGER,
         required=False,
     ),
     openapi.Parameter(
         "ordering",
         openapi.IN_QUERY,
-        description="Sort by price or created_at using 'price', '-price', 'created_at', or '-created_at'.",
+        description=(
+            "Sort results using: price, -price, created_at, -created_at. "
+            "Tie-breaking is deterministic internally for stable pagination."
+        ),
         type=openapi.TYPE_STRING,
         enum=["price", "-price", "created_at", "-created_at"],
         required=False,
@@ -37,14 +40,14 @@ PRODUCT_LIST_PARAMETERS = [
     openapi.Parameter(
         "page_size",
         openapi.IN_QUERY,
-        description="Results per page, if page-size query is enabled.",
+        description="Results per page.",
         type=openapi.TYPE_INTEGER,
         required=False,
     ),
 ]
 
 
-# I'll keep category list params separate so I can grow category discovery later without touching products.
+# I keep category params separate so product/category docs can evolve independently later.
 CATEGORY_LIST_PARAMETERS = [
     openapi.Parameter(
         "page",
@@ -56,7 +59,7 @@ CATEGORY_LIST_PARAMETERS = [
     openapi.Parameter(
         "page_size",
         openapi.IN_QUERY,
-        description="Results per page, if page-size query is enabled.",
+        description="Results per page.",
         type=openapi.TYPE_INTEGER,
         required=False,
     ),
@@ -69,7 +72,7 @@ CATEGORY_LIST_PARAMETERS = [
         tags=["Products"],
         manual_parameters=PRODUCT_LIST_PARAMETERS,
         operation_description=(
-            "List products (public). Use query parameters for filtering and ordering.\n"
+            "List products (public).\n"
             "Example: GET /api/products/?category=1&ordering=price&page=1"
         ),
     ),
@@ -91,8 +94,7 @@ CATEGORY_LIST_PARAMETERS = [
 @method_decorator(
     name="update",
     decorator=swagger_auto_schema(
-        tags=["Products"],
-        operation_description="Update a product (JWT required).",
+        tags=["Products"],         operation_description="Update a product (JWT required).",
     ),
 )
 @method_decorator(
@@ -113,28 +115,18 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
-    # I removed DjangoFilterBackend because I'm already validating and filtering
-    # by category in get_queryset, and I didn't want two systems doing the same job.
-    filter_backends = [OrderingFilter]
-    # I kept ordering explicit so Swagger docs and backend behavior stay aligned.
+    # I chain DjangoFilterBackend + custom ordering backend:
+    # category filtering stays explicit, and ordering gets deterministic tie-breaking.
+    filter_backends = [DjangoFilterBackend, StableOrderingFilter]
+    filterset_class = ProductFilter
+
+    # I keep public ordering options unchanged; `id` is only an internal tie-breaker.
     ordering_fields = ["price", "created_at"]
     ordering = ["price"]
 
     def get_queryset(self):
-        qs = Product.objects.select_related("category").all()
-        raw_category = self.request.query_params.get("category")
-        if raw_category is not None:
-            try:
-                cat_id = int(raw_category)
-            except (TypeError, ValueError):
-                raise ValidationError({"category": "Must be an integer category id."})
-            if cat_id <= 0:
-                raise ValidationError({"category": "Must be a positive integer category id."})
-            # I filter directly here so bad values fail fast and valid values are always applied.
-            qs = qs.filter(category_id=cat_id)
-
-        return qs
-
+        # I use select_related so list responses don't trigger N+1 queries when serializer reads category fields.
+        return Product.objects.select_related("category").order_by("price", "id")
 
 @method_decorator(
     name="list",
@@ -180,6 +172,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     ),
 )
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all().order_by("name")
+    # I added id as a secondary sort so categories with same name still paginate consistently.
+    queryset = Category.objects.all().order_by("name", "id")
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
